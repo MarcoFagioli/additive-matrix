@@ -7,9 +7,9 @@
 
 #include "additive-matrix.h"
 
-int input_read(char *in_file, int matrix[MATRIX_MAX][MATRIX_MAX]){
+int input_read(char *in_file, int matrix[ARRAY_MAX]){
 	
-	int i=0, j=0;
+	int i=0, n=0;
 	char a;
 
 	FILE *input_file;
@@ -21,47 +21,50 @@ int input_read(char *in_file, int matrix[MATRIX_MAX][MATRIX_MAX]){
 	}
 	
 	while(! feof(input_file)){
-		fscanf(input_file, "%d", &matrix[i][j]);
-		j++;
+		fscanf(input_file, "%d", &matrix[i]);
+		i++;
 		fscanf(input_file, "%c", &a);
-		if(a == '\n'){
-			i++;
-			j=0;
-		}	
+		if(a == '\n')
+			n++;
 	}
 
 	fclose(input_file);
-	return ++i;
+	return ++n;
 }
 
-bool matrix_positive(int matrix[MATRIX_MAX][MATRIX_MAX], int matrix_dimension){
+int matrix_conversion(int matrix[ARRAY_MAX], int i, int j, int n){
+
+	return matrix[i*n+j];
+}
+
+bool matrix_positive(int matrix[ARRAY_MAX], int matrix_dimension){
 	
 	int i, j;
 
 	for(i=0; i<matrix_dimension; i++)
 		for(j=i; j<matrix_dimension; j++)
-			if(matrix[i][j]<0)
+			if(matrix_conversion(matrix, i, j, matrix_dimension)<0)
 				return false;
 
 	return true;
 }
 
-bool matrix_simmetric(int matrix[MATRIX_MAX][MATRIX_MAX], int matrix_dimension){
+bool matrix_simmetric(int matrix[ARRAY_MAX], int matrix_dimension){
 	
 	int i, j;
 
 	for(i=0; i<matrix_dimension; i++)
 		for(j=i; j<matrix_dimension; j++){
-			if((i==j)&&(matrix[i][j]!=0))
+			if((i==j)&&(matrix_conversion(matrix, i, j, matrix_dimension)!=0))
 				return false;
-			if((i!=j)&&(matrix[i][j]!=matrix[j][i]))
+			if((i!=j)&&(matrix_conversion(matrix, i, j, matrix_dimension)!=matrix_conversion(matrix, j, i, matrix_dimension)))
 				return false;
 		}
 
 	return true;
 }
 
-bool matrix_additive(int matrix[MATRIX_MAX][MATRIX_MAX], int matrix_dimension){
+bool matrix_additive(int matrix[ARRAY_MAX], int matrix_dimension){
 
 	int i, j, k, l;
 	int sum1, sum2, sum3;
@@ -75,13 +78,13 @@ bool matrix_additive(int matrix[MATRIX_MAX][MATRIX_MAX], int matrix_dimension){
 					#ifdef DEBUG
 						printf("Point (%d,%d,%d,%d)\n", i, j, k, l);
 					#endif
-					sum1 = matrix[i][j] + matrix[k][l];
-					sum2 = matrix[i][k] + matrix[j][l];
-					sum3 = matrix[i][l] + matrix[j][k];
+					sum1 = matrix_conversion(matrix, i, j, matrix_dimension) + matrix_conversion(matrix, k, l, matrix_dimension);
+					sum2 = matrix_conversion(matrix, i, k, matrix_dimension) + matrix_conversion(matrix, j, l, matrix_dimension);
+					sum3 = matrix_conversion(matrix, i, l, matrix_dimension) + matrix_conversion(matrix, j, k, matrix_dimension);
 					#ifdef DEBUG
-						printf("(%d,%d) (%d,%d) %d + %d Sum 1 = %d\n", i, j, k, l, matrix[i][j], matrix[k][l], sum1);
-						printf("(%d,%d) (%d,%d) %d + %d Sum 2 = %d\n", i, k, j, l, matrix[i][k], matrix[j][l], sum2);
-						printf("(%d,%d) (%d,%d) %d + %d Sum 3 = %d\n\n", i, l, j, k, matrix[i][l], matrix[j][k], sum3);
+						printf("(%d,%d) (%d,%d) %d + %d Sum 1 = %d\n", i, j, k, l, matrix_conversion(matrix, i, j, matrix_dimension), matrix_conversion(matrix, k, l, matrix_dimension), sum1);
+						printf("(%d,%d) (%d,%d) %d + %d Sum 2 = %d\n", i, k, j, l, matrix_conversion(matrix, i, k, matrix_dimension), matrix_conversion(matrix, j, l, matrix_dimension), sum2);
+						printf("(%d,%d) (%d,%d) %d + %d Sum 3 = %d\n\n", i, l, j, k, matrix_conversion(matrix, i, l, matrix_dimension), matrix_conversion(matrix, j, k, matrix_dimension), sum3);
 					#endif
 
 					if(sum1 < sum2)
@@ -103,7 +106,7 @@ bool matrix_additive(int matrix[MATRIX_MAX][MATRIX_MAX], int matrix_dimension){
 	return true;
 }
 
-void output_print(int matrix[MATRIX_MAX][MATRIX_MAX], int matrix_dimension){
+void output_print(int matrix[ARRAY_MAX], int matrix_dimension){
 
 	int i, j;
 	FILE *output_file;
@@ -116,7 +119,7 @@ void output_print(int matrix[MATRIX_MAX][MATRIX_MAX], int matrix_dimension){
 
 	for(i=0; i<matrix_dimension; i++){
 		for(j=0; j<matrix_dimension; j++)
-			fprintf(output_file, "%d\t", matrix[i][j]);
+			fprintf(output_file, "%d\t", matrix_conversion(matrix, i, j, matrix_dimension));
 		fprintf(output_file, "\n");
 	}
 
@@ -141,7 +144,7 @@ void output_error(char *error){
 void main(int argc, char *argv[]) {
 	
 	int i, j;
-	int matrix[MATRIX_MAX][MATRIX_MAX];
+	int matrix[ARRAY_MAX];
 
 	int matrix_dimension = input_read(argv[1], matrix);
 
