@@ -5,13 +5,13 @@
 		given a matrix in input verify if it is additive.
 
 		File.c with alghoritms using array approach to simulate matrix.
-		Static use of data structure, with max dimension of array.
+		Dynamic use of data structure, initial malloc with max dimension of array and final free of array space.
 
 */
 
 #include "additive-matrix.h"
 
-int matrix_conversion(int array[ARRAY_MAX], int i, int j, int n){
+int matrix_conversion(int *array, int i, int j, int n){
 
 	return array[i*n+j];
 }
@@ -26,7 +26,7 @@ int sum_first_i(int i){
 	return sum;
 }
 
-void matrix_triangolar_fix(int array[ARRAY_MAX], int matrix_dimension, int index_element){
+void matrix_triangolar_fix(int *array, int matrix_dimension, int index_element){
 
 	int i, j;
 
@@ -41,11 +41,19 @@ void matrix_triangolar_fix(int array[ARRAY_MAX], int matrix_dimension, int index
 			array[j*matrix_dimension+i] = matrix_conversion(array, i, j, matrix_dimension);
 }
 
-int input_read(char *in_file, int array[ARRAY_MAX]){
+int* input_read(char *in_file, int *p_matrix_dim){
 	
 	int i=0, n=0;
 
 	char a;
+
+	int *array = malloc(ARRAY_MAX * sizeof(int *));
+	
+	if(array == NULL)
+    {
+        printf("Memoria esaurita\n");
+        exit(-1);
+    }
 
 	FILE *input_file;
 	input_file = fopen(in_file, "r");
@@ -54,7 +62,7 @@ int input_read(char *in_file, int array[ARRAY_MAX]){
 		printf("Error in input file open");
 		exit(-1);
 	}
-	
+
 	while(! feof(input_file)){
 		fscanf(input_file, "%d", &array[i]);
 		i++;
@@ -66,15 +74,18 @@ int input_read(char *in_file, int array[ARRAY_MAX]){
 	}
 	n++;
 
+	*p_matrix_dim = n;
+
 	fclose(input_file);
+
 
 	if(i==sum_first_i(n))
 		matrix_triangolar_fix(array, n, i-1);
 
-	return n;
+	return array;
 }
 
-bool matrix_positive(int array[ARRAY_MAX], int matrix_dimension){
+bool matrix_positive(int *array, int matrix_dimension){
 	
 	int i, j;
 
@@ -86,8 +97,8 @@ bool matrix_positive(int array[ARRAY_MAX], int matrix_dimension){
 	return true;
 }
 
-bool matrix_simmetric(int array[ARRAY_MAX], int matrix_dimension){
-	
+bool matrix_simmetric(int *array, int matrix_dimension){
+
 	int i, j;
 
 	for(i=0; i<matrix_dimension; i++)
@@ -101,7 +112,7 @@ bool matrix_simmetric(int array[ARRAY_MAX], int matrix_dimension){
 	return true;
 }
 
-bool matrix_additive(int array[ARRAY_MAX], int matrix_dimension){
+bool matrix_additive(int *array, int matrix_dimension){
 
 	int i, j, k, l;
 
@@ -144,7 +155,7 @@ bool matrix_additive(int array[ARRAY_MAX], int matrix_dimension){
 	return true;
 }
 
-void output_print(int array[ARRAY_MAX], int matrix_dimension){
+void output_print(int *array, int matrix_dimension){
 
 	int i, j;
 
@@ -188,9 +199,11 @@ void output_error(char *error){
 void main(int argc, char *argv[]) {
 	
 	int i, j;
-	int array[ARRAY_MAX];
 
-	int matrix_dimension = input_read(argv[1], array);
+	int matrix_dimension=0;
+	int *p_matrix_dim = &matrix_dimension;
+
+	int *array = input_read(argv[1], p_matrix_dim);
 	if(matrix_dimension>MATRIX_MAX)
 		output_error("Matrix is too big, there is no space to save it.\nInput matrix is not valid.");
 
@@ -201,7 +214,7 @@ void main(int argc, char *argv[]) {
 	#endif
 	if(positive!=true)
 		output_error("Some element of the matrix is not positive.\nInput matrix is not valid.");
-	
+
 
 	bool simmetric = matrix_simmetric(array, matrix_dimension);
 	#ifdef DEBUG
@@ -219,4 +232,6 @@ void main(int argc, char *argv[]) {
 		output_error("The matrix is not additive.");
 
 	output_print(array, matrix_dimension);
+
+	free(array);
 }

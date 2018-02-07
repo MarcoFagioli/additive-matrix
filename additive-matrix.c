@@ -190,7 +190,7 @@ void main(int argc, char *argv[]) {
 	int matrix_dimension = input_read(argv[1], matrix);
 	if(matrix_dimension>MATRIX_MAX)
 		output_error("Matrix is too big, there is no space to save it.\nInput matrix is not valid.");
-
+	
 
 	bool positive = matrix_positive(matrix, matrix_dimension);
 	#ifdef DEBUG
